@@ -1,0 +1,4 @@
+interface:
+  display_name: "会议纪要skill"
+  short_description: "读取录屏和笔记，生成可追溯的会议总结、分工待办与完整画面截图附录"
+  default_prompt: "使用 $meeting-minutes 读取我提供的录屏和笔记，制作含总结、分工、待办和全画面截图附录的结构化会议纪要。"

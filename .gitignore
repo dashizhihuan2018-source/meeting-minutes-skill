@@ -1,0 +1,14 @@
+# Publish only the reviewed skill files. Generated meeting data stays untracked.
+*
+!/.gitignore
+!/README.md
+!/meeting-minutes/
+!/meeting-minutes/SKILL.md
+!/meeting-minutes/agents/
+!/meeting-minutes/agents/openai.yaml
+!/meeting-minutes/references/
+!/meeting-minutes/references/output-contract.md
+!/meeting-minutes/references/open-source-methods.md
+!/meeting-minutes/scripts/
+!/meeting-minutes/scripts/prepare_meeting.py
+!/meeting-minutes/scripts/transcribe_local.py
