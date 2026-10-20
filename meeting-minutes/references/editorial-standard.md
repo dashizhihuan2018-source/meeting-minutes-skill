@@ -30,6 +30,8 @@
 
 输入字段：`title, subtitle, date, format, organizations, summary, conclusions, actions, discussions, next_steps`。`actions`项使用`id, task, owner, due`；`discussions`项使用`title, text`。可选`style.font`指定本地中文字体，`layout.discussion_new_page`用于长篇分区，`conclusion_heading`可设为“交流结论”。
 
+本地实际纪要可增加`participants`数组，项含`name, organization, role`，以及`participant_note`。`appendices`数组项含`title, note, figures`；图片项含本地`file`、原图`width, height`及`caption`，渲染为一图一页的横向附录，并复制完整原图到输出目录。默认不去掉名单和附录；公开模板只保留此通用结构，不包含真实姓名、头像或截图。`classification`可加在页脚，`layout.conclusions_new_page`、`layout.discussion_page_break_before`可控制长篇分页。
+
 ## 交付检查
 
 渲染DOCX至PDF后查看全部页面：字体真实嵌入、页边距、截断、表格、孤立标题、行拆分和留白；检查文本及任务未丢失、个人元数据未意外进入文件。模板通过不等于业务内容获确认，也不对审美质量作“世界第一”或认证承诺。

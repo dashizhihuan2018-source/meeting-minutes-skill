@@ -44,10 +44,19 @@ body.push(table([new d.TableRow({ cantSplit: true, children: metadata.map(([k, v
   P(k, { children: [R(k, { size: 16, color: gray })], spacing: { after: 60 } }),
   P(v, { children: [R(v, { size: 19, bold: true })], spacing: { after: 0, line: 270 } })
 ], width / 3, 'F3F6F7')) })], [3100, 3100, 3100]));
+if (m.participants?.length) {
+  body.push(new d.Paragraph({heading:d.HeadingLevel.HEADING_1,keepNext:true,children:[R('与会人员',{bold:true,size:25,color:teal})],spacing:{before:220,after:120}}));
+  const pw=[1550,2300,5450];
+  const pr=[new d.TableRow({tableHeader:true,cantSplit:true,children:['姓名／标识','单位／团队','会中角色'].map((s,i)=>cell([P(s,{children:[R(s,{size:18,bold:true,color:'FFFFFF'})],spacing:{after:0}})],pw[i],ink))})];
+  m.participants.forEach((p,i)=>pr.push(new d.TableRow({cantSplit:true,children:[p.name||'待确认',p.organization||'待确认',p.role||'待确认'].map((s,j)=>cell([P(s,{children:[R(s,{size:18})],spacing:{line:250,after:0}})],pw[j],i%2?'FFFFFF':'F4F7F8',line,{top:80,bottom:80}))})));
+  body.push(table(pr,pw));
+  if(m.participant_note)body.push(P(m.participant_note,{children:[R(m.participant_note,{size:17,color:gray})],spacing:{before:100,after:0,line:250}}));
+}
 body.push(H(1, '会议摘要'));
 body.push(table([new d.TableRow({ cantSplit: true, children: [cell([
   P(m.summary, { spacing: { line: 305, after: 0 } })
 ], width, light, none, { top: 160, bottom: 160, left: 200, right: 200 })] })], [width]));
+if(m.layout?.conclusions_new_page)body.push(new d.Paragraph({children:[new d.PageBreak()]}));
 body.push(H(2, m.conclusion_heading || '关键决策'));
 m.conclusions.forEach((s, i) => body.push(new d.Paragraph({
   children: [R(String(i + 1).padStart(2, '0') + '  ', { color: teal, bold: true }), R(s)],
@@ -70,6 +79,7 @@ if (m.action_note) body.push(P(m.action_note, { children: [R(m.action_note, { si
 if (m.layout?.discussion_new_page) body.push(new d.Paragraph({ children: [new d.PageBreak()] }));
 body.push(H(4, '讨论要点'));
 m.discussions.forEach((section, i) => {
+  if(m.layout?.discussion_page_break_before?.includes(i))body.push(new d.Paragraph({children:[new d.PageBreak()]}));
   body.push(new d.Paragraph({
     heading: d.HeadingLevel.HEADING_2, keepNext: true,
     children: [R(String(i + 1).padStart(2, '0') + '  ', { color: teal, size: 24, bold: true }), R(section.title, { size: 24, bold: true })],
@@ -82,24 +92,50 @@ if (m.next_steps) {
   body.push(new d.Paragraph({ children: [R('下一步', { size: 23, bold: true, color: teal })], keepNext: true, spacing: { before: 220, after: 100 } }));
   body.push(P(m.next_steps, { keepLines: true }));
 }
+const figureCopies=[];
+const appendixSections=[];
+for(const appendix of m.appendices||[]){
+  for(const [i,figure] of (appendix.figures||[]).entries()){
+    const data=fs.readFileSync(path.resolve(figure.file));
+    const ext=path.extname(figure.file).toLowerCase();
+    const type=ext==='.png'?'png':'jpg';
+    if(!['.png','.jpg','.jpeg'].includes(ext))throw new Error('Appendix requires PNG or JPEG');
+    const iw=figure.width,ih=figure.height;
+    if(!(iw>0&&ih>0))throw new Error('Appendix requires image dimensions');
+    const scale=Math.min(950/iw,470/ih);
+    figureCopies.push({data,file:`附录图片/${String(figureCopies.length+1).padStart(2,'0')}.${type}`,caption:figure.caption||'',heading:appendix.title});
+    appendixSections.push({properties:{type:d.SectionType.NEXT_PAGE,page:{size:{width:11906,height:16838,orientation:d.PageOrientation.LANDSCAPE},margin:{top:750,bottom:700,left:800,right:800}}},children:[
+      new d.Paragraph({heading:d.HeadingLevel.HEADING_1,keepNext:true,children:[R(appendix.title,{size:26,bold:true,color:teal})],spacing:{after:100}}),
+      P(figure.caption||`截图 ${i+1}`,{children:[R(figure.caption||`截图 ${i+1}`,{size:20})],spacing:{after:130}}),
+      new d.Paragraph({alignment:d.AlignmentType.CENTER,children:[new d.ImageRun({type,data,transformation:{width:Math.round(iw*scale),height:Math.round(ih*scale)}})],spacing:{after:80}}),
+      P(appendix.note||'完整原画面，保留分享内容及参会区域。',{children:[R(appendix.note||'完整原画面，保留分享内容及参会区域。',{size:16,color:gray})],spacing:{after:0}})
+    ]});
+  }
+}
+if(m.appendix_note)body.push(P(m.appendix_note,{children:[R(m.appendix_note,{size:18,color:gray})],spacing:{before:200,after:0,line:260}}));
 const doc = new d.Document({ creator: 'Meeting Minutes', lastModifiedBy: 'Meeting Minutes', title: m.title,
   styles: { default: { document: { run: { font, size: 21, color: ink }, paragraph: { spacing: { line: 302 } } } } },
   sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1000, bottom: 1000, left: 1303, right: 1303 } } },
     headers: { default: new d.Header({ children: [new d.Paragraph({ children: [R(m.header || '技术交流  /  会议纪要', { size: 16, color: gray })], border: { bottom: line }, spacing: { after: 100 } })] }) },
-    footers: { default: new d.Footer({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [R(m.date + '   /   ', { size: 16, color: gray }), new d.TextRun({ children: [d.PageNumber.CURRENT], font, size: 16, color: gray })] })] }) }, children: body }]
+    footers: { default: new d.Footer({ children: [new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [R((m.classification?m.classification+'   ·   ':'')+m.date + '   /   ', { size: 16, color: gray }), new d.TextRun({ children: [d.PageNumber.CURRENT], font, size: 16, color: gray })] })] }) }, children: body },...appendixSections]
 });
 const safe = v => String(v ?? '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
-const md = [`# ${m.title}`, m.subtitle || '', m.date, '', '## 一、会议摘要', m.summary, '', `## 二、${m.conclusion_heading || '关键决策'}`,
+const md = [`# ${m.title}`, m.subtitle || '', m.date,
+  ...(m.participants?.length?['','## 与会人员','| 姓名／标识 | 单位／团队 | 会中角色 |','| --- | --- | --- |',...m.participants.map(p=>`| ${[p.name||'待确认',p.organization||'待确认',p.role||'待确认'].map(safe).join(' | ')} |`),m.participant_note||'']:[]),
+  '', '## 一、会议摘要', m.summary, '', `## 二、${m.conclusion_heading || '关键决策'}`,
   ...m.conclusions.map((s, i) => `${i + 1}. ${s}`), '', '## 三、行动事项', '| ID | 事项与交付 | 跟进方 | 期限 |', '| --- | --- | --- | --- |',
   ...m.actions.map((a, i) => `| ${[a.id || `A${String(i + 1).padStart(2, '0')}`, a.task, a.owner || '待确认', a.due || '未约定'].map(safe).join(' | ')} |`),
   m.action_note || '', '', '## 四、讨论要点', ...m.discussions.flatMap(s => [`### ${s.title}`, ...(Array.isArray(s.text) ? s.text : [s.text])]),
-  ...(m.next_steps ? ['', '## 下一步', m.next_steps] : [])].filter(s => s !== undefined).join('\n\n');
+  ...(m.next_steps ? ['', '## 下一步', m.next_steps] : []),m.appendix_note||'',
+  ...figureCopies.flatMap(f=>[`## ${f.heading}`,f.caption,`![${safe(f.caption)}](${f.file})`])].filter(s => s !== undefined).join('\n\n');
 async function main() {
   const buffer = await d.Packer.toBuffer(doc);
   const out = path.resolve(output);
   fs.mkdirSync(out); // No recursive/overwrite: output must be a new child of an existing directory.
   fs.writeFileSync(path.join(out, requestedStem + '.docx'), buffer, { flag: 'wx' });
   fs.writeFileSync(path.join(out, requestedStem + '.md'), md, { flag: 'wx' });
-  console.log(JSON.stringify({ files: 2, actions: m.actions.length, discussions: m.discussions.length }));
+  if(figureCopies.length)fs.mkdirSync(path.join(out,'附录图片'));
+  figureCopies.forEach(f=>fs.writeFileSync(path.join(out,f.file),f.data,{flag:'wx'}));
+  console.log(JSON.stringify({ files: 2+figureCopies.length, actions: m.actions.length, discussions: m.discussions.length,participants:m.participants?.length||0,appendix_images:figureCopies.length }));
 }
 main().catch(err => { console.error(err.message); process.exitCode = 1; });

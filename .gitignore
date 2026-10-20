@@ -14,3 +14,4 @@
 !/meeting-minutes/scripts/prepare_meeting.py
 !/meeting-minutes/scripts/transcribe_local.py
 !/meeting-minutes/scripts/render_minutes.js
+!/meeting-minutes/scripts/deduplicate_frames.py
