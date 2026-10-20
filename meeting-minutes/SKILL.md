@@ -42,4 +42,6 @@ description: 从会议录音、录屏、笔记或转写稿制作可追溯的结�
 
 编写纪要前读取 [输出契约](references/output-contract.md)。需要选择工具或解释方法来源时再读 [开源方法](references/open-source-methods.md)。不要求每次重新检索或安装会议助手；只有用户明确要求调研时才按当次 GitHub stars、检索口径、日期和许可证记录排名。
 
+制作Word/PDF、用户要求标准格式或提高排版质量时，读取[编辑与排版标准](references/editorial-standard.md)，采用“摘要—关键决策/交流结论—行动事项—讨论要点”的四段结构。可用 `scripts/render_minutes.js` 将已核对的结构化JSON排版为可编辑DOCX和Markdown；依赖本地 `docx` Node包，需实际渲染检查，不靠缩小字号掩盖溢出。
+
 案例材料只用于当次任务，不把某次会议的业务事实变成其他会议的默认结论。可分享技能只包含通用说明和代码，不打包真实录屏、笔记、截图、转写、参会信息或内部业务事实。

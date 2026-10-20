@@ -9,6 +9,7 @@
 - 提取保留分享内容与人物区域的完整画面截图，建立带时间索引的内部证据包。
 - 使用已有本地模型转写，保留时间戳；结合笔记核对关键事实。
 - 区分会议决定、讨论意见与建议，不补写缺失的负责人、期限或承诺。
+- 参考Meetily标准模板，采用“摘要—关键决策—行动事项—讨论要点”四段结构；提供可编辑商务版式。
 
 ## 使用
 
@@ -35,6 +36,8 @@ python meeting-minutes/scripts/transcribe_local.py \
 ```
 
 脚本负责材料提取、完整画面抽样和可选本地转写；纪要正文由助手根据技能工作流编写。输出目录必须是新目录，避免覆盖现有资料。
+
+已核对的结构化内容可使用 `node meeting-minutes/scripts/render_minutes.js input.json new-output-directory` 生成Word与Markdown，需要本地 `docx` Node依赖和可用中文字体。输入结构、字体与版式参数见[编辑与排版标准](meeting-minutes/references/editorial-standard.md)。模板不会替用户生成未经核对的会议事实。
 
 ## 隐私
 
